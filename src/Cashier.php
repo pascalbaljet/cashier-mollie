@@ -34,6 +34,13 @@ class Cashier
     protected static $formatCurrencyUsing;
 
     /**
+     * Indicates if Cashier migrations will be run.
+     *
+     * @var bool
+     */
+    public static $runsMigrations = true;
+
+    /**
      * Process scheduled OrderItems
      *
      * @return \Illuminate\Support\Collection
@@ -107,7 +114,7 @@ class Cashier
     {
         return static::$currency;
     }
-    
+
     /**
      * Get the currency symbol currently in use.
      *
@@ -142,7 +149,7 @@ class Cashier
         }
 
         $numberFormatter = new \NumberFormatter('de_DE', \NumberFormatter::CURRENCY);
-        $moneyFormatter = new IntlMoneyFormatter($numberFormatter, new ISOCurrencies);
+        $moneyFormatter  = new IntlMoneyFormatter($numberFormatter, new ISOCurrencies);
 
         return $moneyFormatter->format($money);
     }
@@ -153,14 +160,27 @@ class Cashier
      */
     public static function getLocale(Model $owner)
     {
-        if(method_exists($owner, 'getLocale')) {
+        if (method_exists($owner, 'getLocale')) {
             $locale = $owner->getLocale();
 
-            if(!empty($locale)) {
+            if (!empty($locale)) {
                 return $locale;
             }
         }
 
         return config('cashier.locale');
     }
+
+    /**
+     * Configure Cashier to not register its migrations.
+     *
+     * @return static
+     */
+    public static function ignoreMigrations()
+    {
+        static::$runsMigrations = false;
+
+        return new static;
+    }
+
 }

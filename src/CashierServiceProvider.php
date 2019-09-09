@@ -5,9 +5,9 @@ namespace Laravel\Cashier;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Console\Commands\CashierInstall;
 use Laravel\Cashier\Console\Commands\CashierRun;
-use Laravel\Cashier\Order\Contracts\MinimumPayment as MinimumPaymentContract;
 use Laravel\Cashier\Coupon\ConfigCouponRepository;
 use Laravel\Cashier\Coupon\Contracts\CouponRepository;
+use Laravel\Cashier\Order\Contracts\MinimumPayment as MinimumPaymentContract;
 use Laravel\Cashier\Plan\ConfigPlanRepository;
 use Laravel\Cashier\Plan\Contracts\PlanRepository;
 use Mollie\Laravel\MollieServiceProvider;
@@ -21,14 +21,17 @@ class CashierServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->loadRoutesFrom(__DIR__.'/../routes/webhooks.php');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/webhooks.php');
         $this->mergeConfig();
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'cashier');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'cashier');
 
         mollie()->addVersionString('MollieLaravelCashier/' . self::PACKAGE_VERSION);
 
         if ($this->app->runningInConsole()) {
-            $this->publishMigrations('cashier-migrations');
+            if (Cashier::$runsMigrations) {
+                $this->publishMigrations('cashier-migrations');
+            }
+
             $this->publishConfig('cashier-configs');
             $this->publishViews('cashier-views');
         }
@@ -57,38 +60,38 @@ class CashierServiceProvider extends ServiceProvider
 
     protected function mergeConfig()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/cashier.php', 'cashier');
-        $this->mergeConfigFrom(__DIR__.'/../config/cashier_coupons.php', 'cashier_coupons');
-        $this->mergeConfigFrom(__DIR__.'/../config/cashier_plans.php', 'cashier_plans');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cashier.php', 'cashier');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cashier_coupons.php', 'cashier_coupons');
+        $this->mergeConfigFrom(__DIR__ . '/../config/cashier_plans.php', 'cashier_plans');
     }
 
     protected function publishMigrations(string $tag)
     {
-        $prefix = 'migrations/'.date('Y_m_d_His', time());
+        $prefix = 'migrations/' . date('Y_m_d_His', time());
 
         $this->publishes([
-            __DIR__.'/../database/migrations/create_applied_coupons_table.php.stub' => database_path($prefix .'_create_applied_coupons_table.php'),
-            __DIR__.'/../database/migrations/create_redeemed_coupons_table.php.stub' => database_path($prefix .'_create_redeemed_coupons_table.php'),
-            __DIR__.'/../database/migrations/create_credits_table.php.stub' => database_path($prefix .'_create_credits_table.php'),
-            __DIR__.'/../database/migrations/create_orders_table.php.stub' => database_path($prefix .'_create_orders_table.php'),
-            __DIR__.'/../database/migrations/create_order_items_table.php.stub' => database_path($prefix .'_create_order_items_table.php'),
-            __DIR__.'/../database/migrations/create_subscriptions_table.php.stub' => database_path($prefix .'_create_subscriptions_table.php'),
+            __DIR__ . '/../database/migrations/create_applied_coupons_table.php.stub'  => database_path($prefix . '_create_applied_coupons_table.php'),
+            __DIR__ . '/../database/migrations/create_redeemed_coupons_table.php.stub' => database_path($prefix . '_create_redeemed_coupons_table.php'),
+            __DIR__ . '/../database/migrations/create_credits_table.php.stub'          => database_path($prefix . '_create_credits_table.php'),
+            __DIR__ . '/../database/migrations/create_orders_table.php.stub'           => database_path($prefix . '_create_orders_table.php'),
+            __DIR__ . '/../database/migrations/create_order_items_table.php.stub'      => database_path($prefix . '_create_order_items_table.php'),
+            __DIR__ . '/../database/migrations/create_subscriptions_table.php.stub'    => database_path($prefix . '_create_subscriptions_table.php'),
         ], $tag);
     }
 
     protected function publishConfig(string $tag)
     {
         $this->publishes([
-            __DIR__.'/../config/cashier.php' => config_path('cashier.php'),
-            __DIR__.'/../config/cashier_coupons.php' => config_path('cashier_coupons.php'),
-            __DIR__.'/../config/cashier_plans.php' => config_path('cashier_plans.php'),
+            __DIR__ . '/../config/cashier.php'         => config_path('cashier.php'),
+            __DIR__ . '/../config/cashier_coupons.php' => config_path('cashier_coupons.php'),
+            __DIR__ . '/../config/cashier_plans.php'   => config_path('cashier_plans.php'),
         ], $tag);
     }
 
     protected function publishViews(string $tag)
     {
         $this->publishes([
-            __DIR__.'/../resources/views' => $this->app->basePath('resources/views/vendor/cashier'),
+            __DIR__ . '/../resources/views' => $this->app->basePath('resources/views/vendor/cashier'),
         ], $tag);
     }
 }
